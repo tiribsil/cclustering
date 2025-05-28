@@ -14,6 +14,7 @@
 // Nomes de cores correspondentes para X11
 // Certifique-se de que a ordem corresponde ao enum ClusterColor
 const char* CLUSTER_COLOR_NAMES[NUM_CLUSTER_COLORS] = {
+    "black",
     "red",
     "green",
     "blue",
@@ -126,12 +127,12 @@ void draw_points_on_expose(X11Context* x_context, const DataSet* dataset) {
         // Se cluster_id já estiver no intervalo [0, NUM_CLUSTER_COLORS-1], o módulo não é estritamente necessário,
         // mas é uma boa proteção.
         if (cluster_id >= 0 && cluster_id < NUM_CLUSTER_COLORS) {
-            current_point_color_pixel = x_context->cluster_color_pixels[cluster_id];
+            current_point_color_pixel = x_context->cluster_color_pixels[cluster_id + 1];
         } else {
             // Fallback para uma cor padrão (ex: preto) se cluster_id estiver fora do intervalo
             fprintf(stderr, "Aviso: cluster_id %d para o ponto %wd está fora do intervalo [0, %d). Usando preto.\n",
                     cluster_id, i, NUM_CLUSTER_COLORS);
-            current_point_color_pixel = x_context->cluster_color_pixels[CLUSTER_COLOR_RED];
+            current_point_color_pixel = x_context->cluster_color_pixels[CLUSTER_COLOR_BLACK];
             // Alternativamente, você pode usar o operador módulo para "envolver" o id:
             // int color_index = (cluster_id % NUM_CLUSTER_COLORS + NUM_CLUSTER_COLORS) % NUM_CLUSTER_COLORS; // Garante positivo
             // current_point_color_pixel = x_context->cluster_color_pixels[color_index];
@@ -227,7 +228,7 @@ void initialize_cluster_colors(X11Context* x_context) {
             fprintf(stderr, "Aviso: Não foi possível alocar a cor '%s'. Usando preto.\n", CLUSTER_COLOR_NAMES[i]);
             // Fallback para preto se a cor não puder ser alocada
             // Assumindo que black_pixel já foi inicializado
-            if (i == CLUSTER_COLOR_RED && x_context->black_pixel) { // Se o próprio preto falhar, temos um problema maior
+            if (i == CLUSTER_COLOR_BLACK && x_context->black_pixel) { // Se o próprio preto falhar, temos um problema maior
                 x_context->cluster_color_pixels[i] = x_context->black_pixel;
             } else if (x_context->black_pixel) { // Use preto como fallback
                 x_context->cluster_color_pixels[i] = x_context->black_pixel;

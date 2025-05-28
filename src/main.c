@@ -51,7 +51,7 @@ int main(int argc, char *argv[]) {
     // >>> FIM DA NOVA LINHA <<<
     
     // ------------------------ <<< CLUSTERING AQUI >>> ------------------------
-    k_means(dataset, 2);
+    k_means(dataset, 8);
     
     printf("Exibindo dados. Pressione 'q' na janela para sair.\n");
     // O primeiro desenho ocorrerá devido ao evento Expose após XMapWindow e o loop de eventos.

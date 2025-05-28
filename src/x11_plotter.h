@@ -5,7 +5,7 @@
 #include "data_loader.h" // Para usar DataSet
 #include <X11/Xlib.h>     // Tipos básicos do X11
 
-#define NUM_CLUSTER_COLORS 12
+#define NUM_CLUSTER_COLORS 13
 
 // Estrutura para manter o contexto X11
 typedef struct {
@@ -22,7 +22,8 @@ typedef struct {
 
 // Novo: Enum para as cores do cluster
 typedef enum {
-    CLUSTER_COLOR_RED = 0,
+    CLUSTER_COLOR_BLACK = 0,
+    CLUSTER_COLOR_RED,
     CLUSTER_COLOR_GREEN,
     CLUSTER_COLOR_BLUE,
     CLUSTER_COLOR_YELLOW,

@@ -4,85 +4,71 @@
 #include <math.h>
 #include "clustering.h"
 
-double mean(double* v, size_t size){
-    if(!size) return 0;
+DataPoint* centroids(DataSet* dataset, int n_clusters){
+    DataPoint* p_centroids = malloc(sizeof(DataPoint) * n_clusters);
     
-    double sum = 0;
-    for(int i = 0; i < size; i++) sum += v[i];
+    double* d1_sums = malloc(sizeof(double) * n_clusters);
+    double* d2_sums = malloc(sizeof(double) * n_clusters);
+    int* sizes = malloc(sizeof(int) * n_clusters);
     
-    return sum / size;
-}
-
-DataPoint centroid(DataSet* dataset, int* cluster, int size){
-    double* d1s = malloc(sizeof(double) * size);
-    double* d2s = malloc(sizeof(double) * size);
+    memset(sizes, 0, sizeof(int) * n_clusters);
+    memset(d1_sums, 0, sizeof(double) * n_clusters);
+    memset(d2_sums, 0, sizeof(double) * n_clusters);
     
-    for(int i = 0; i < size; i++){
-        d1s[i] = dataset->points[cluster[i]].d1;
-        d2s[i] = dataset->points[cluster[i]].d2;
+    for(int i = 0; i < dataset->count; i++){
+        int i_cluster = dataset->points[i].cluster_id;
+        d1_sums[i_cluster] += dataset->points[i].d1;
+        d2_sums[i_cluster] += dataset->points[i].d2;
+        sizes[i_cluster]++;
     }
     
-    DataPoint pCentroid;
-    pCentroid.d1 = mean(d1s, size);
-    pCentroid.d2 = mean(d2s, size);
+    for(int i = 0; i < n_clusters; i++){
+        p_centroids[i].d1 = d1_sums[i] / sizes[i];
+        p_centroids[i].d2 = d2_sums[i] / sizes[i];
+    }
     
-    free(d1s);
-    free(d2s);
+    free(d1_sums);
+    free(d2_sums);
+    free(sizes);
     
-    return pCentroid;
-}
-
-double squared_distance(DataPoint* p1, DataPoint* p2){
-    return pow(p1->d1 - p2->d1, 2) + pow(p1->d2 - p2->d2, 2);
+    return p_centroids;
 }
 
 void k_means(DataSet* dataset, int k){
-    int** clusters = malloc(sizeof(int*) * k);
-    int* oldSizes = malloc(sizeof(int) * k);
-    int* newSizes = malloc(sizeof(int) * k);
-    
     for(int i = 0; i < k; i++){
-        clusters[i] = malloc(sizeof(int) * dataset->count);
-        clusters[i][0] = (dataset->count / (k + 1)) * (i + 1);
-        printf("Ponto do cluster %d = %d\n", i, clusters[i][0]);
-        dataset->points[clusters[i][0]].cluster_id = i;
-        oldSizes[i] = 1;
+        int point_index = (dataset->count / (k + 1)) * (i + 1);
+        
+        //Para mostrar pontos iniciais escolhidos
+        //printf("Ponto do cluster %d = %d\n", i, clusters[i][0]);
+        
+        dataset->points[point_index].cluster_id = i;
     }
     
     int converged = 0;
     int iterations = 0;
     while(!converged && iterations < 1000){
         converged = 1;
-        memset(newSizes, 0, sizeof(int) * k);
+        DataPoint* p_centroids = centroids(dataset, k);
+        
         for(int i = 0; i < dataset->count; i++){
-            DataPoint centroid_point = centroid(dataset, clusters[0], oldSizes[0]);
-            double smallest_distance = squared_distance(&dataset->points[i], &centroid_point);
+            double smallest_distance = squared_distance(&dataset->points[i], &p_centroids[0]);
             int closest_cluster = 0;
             
             for(int j = 1; j < k; j++){
-                centroid_point = centroid(dataset, clusters[j], oldSizes[j]);
-                double distance_j = squared_distance(&dataset->points[i], &centroid_point);
+                double distance_j = squared_distance(&dataset->points[i], &p_centroids[j]);
                 if(distance_j > smallest_distance) continue;
                 smallest_distance = distance_j;
                 closest_cluster = j;
             }
             
-            clusters[closest_cluster][newSizes[closest_cluster]] = i;
-            newSizes[closest_cluster]++;
-            
             if(closest_cluster == dataset->points[i].cluster_id) continue;
             
             dataset->points[i].cluster_id = closest_cluster;
-            
             converged = 0;
         }
         
-        memcpy(oldSizes, newSizes, sizeof(int) * k);
         iterations++;
+        
+        free(p_centroids);
     }
-    
-    for(int i = 0; i < k; i++) free(clusters[i]);
-    free(clusters);
-    free(oldSizes);
-    free(newSizes);
 }
