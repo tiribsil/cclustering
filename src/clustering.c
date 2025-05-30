@@ -4,6 +4,10 @@
 #include <math.h>
 #include "clustering.h"
 
+double squared_distance(DataPoint* p1, DataPoint* p2){
+    return pow(p1->d1 - p2->d1, 2) + pow(p1->d2 - p2->d2, 2);
+}
+
 DataPoint* centroids(DataSet* dataset, int n_clusters){
     DataPoint* p_centroids = malloc(sizeof(DataPoint) * n_clusters);
     
