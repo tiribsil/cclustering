@@ -5,6 +5,8 @@
 
 #include "data_loader.h"
 
+DataPoint* centroids(DataSet* dataset, int n_clusters);
+
 void k_means(DataSet* dataset, int k);
 
 void single_link(DataSet* dataset, int k);
