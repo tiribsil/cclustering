@@ -76,3 +76,77 @@ void k_means(DataSet* dataset, int k){
         free(p_centroids);
     }
 }
+
+double points_distance(DataPoint* p1, DataPoint* p2) {
+	return sqrt(pow(p1->d1 - p2->d1, 2) + pow(p1->d2 - p2->d2, 2));
+}
+
+void merge_clusters(DataSet* dataset, double** clusters_distance, bool* existing_clusters, int cluster1, int cluster2) {
+
+	int qtd_points = dataset->count;
+
+	existing_clusters[cluster2] = false;
+	for (int i = 0; i < qtd_points; i++)
+		if (dataset->points[i].cluster_id == cluster2) dataset->points[i].cluster_id = cluster1;
+	
+	// Atualizando matriz das distancias entre os clusters:
+	for (int i = 0; i < qtd_points; i++) {
+		if (i == cluster1) continue;
+		if (clusters_distance[cluster1][i] < clusters_distance[cluster2][i]) {
+			clusters_distance[cluster1][i] = clusters_distance[cluster2][i];
+			clusters_distance[i][cluster1] = clusters_distance[cluster2][i];
+		}
+	}
+
+}
+
+void complete_link(DataSet* dataset, int k) {
+	
+	int qtd_points = dataset->count, qtd_clusters = dataset->count;
+	
+	// Cada ponto é um cluster fechado:
+	bool* existing_clusters = (bool*)malloc(sizeof(bool)*qtd_points);
+	for (int i = 0; i < qtd_points; i++) {
+		existing_clusters[i] = true;
+		dataset->points[i].cluster_id = i;
+	}
+	
+	// Array de distancias entres clusters:
+	double** clusters_distance = (double**)malloc(sizeof(double*)*qtd_points);
+	for (int i = 0; i < qtd_points; i++) {
+		clusters_distance[i] = (double*)malloc(sizeof(double)*qtd_points);
+		for (int j = 0; j < qtd_points; j++) clusters_distance[i][j] = points_distance(&dataset->points[i], &dataset->points[j]);
+	}
+	
+	// Comeco do algoritmo de fato:
+	while(qtd_clusters != k) {
+		
+		double shortest_distance = INFINITY;
+		int cluster1 = -1, cluster2 = -1;
+		
+		// Encontrando a menor distancia max na matriz de distancias dos clusters
+		for (int i = 0; i < qtd_points; i++) {
+			if (existing_clusters[i] == false) continue;
+			for (int j = 0; j < qtd_points; j++) {
+				if (existing_clusters[j] == false || clusters_distance[i][j] == 0) continue;
+				if (clusters_distance[i][j] < shortest_distance) {
+					shortest_distance = clusters_distance[i][j];
+					cluster1 = i;
+					cluster2 = j;
+				}
+			}
+		}
+		merge_clusters(dataset, clusters_distance, existing_clusters, cluster1, cluster2);
+		qtd_clusters--;
+		
+	}
+	
+	// Deixando os clusters com as corzinha tudo certo:
+	int correct_id = 0, first = 0;
+	for (int last = 1; last < qtd_points; correct_id++, last++) {
+		while (last < qtd_points && existing_clusters[last] == false) last++;
+		while (first < last) dataset->points[first++].cluster_id = correct_id;
+	}
+
+}
+
