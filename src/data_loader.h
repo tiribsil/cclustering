@@ -4,6 +4,9 @@
 
 #define MAX_LABEL_LEN 50
 
+// MUDANCAS LORENZO:
+typedef enum { false = 0, true = 1 } bool;
+
 typedef struct {
     char label[MAX_LABEL_LEN];
     double d1;
@@ -13,8 +16,8 @@ typedef struct {
 
 typedef struct {
     DataPoint *points;
-    int count;
-    int capacity;
+    int count; // qtd de pontos no vetor
+    int capacity; // capacidade de pontos max do vetor
     double min_d1, max_d1;
     double min_d2, max_d2;
 } DataSet;
