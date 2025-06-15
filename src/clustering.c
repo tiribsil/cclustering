@@ -150,3 +150,75 @@ void complete_link(DataSet* dataset, int k) {
 
 }
 
+void find_closest_points_different_clusters(DataSet* dataset, double** matrix, int* point1_index, int* point2_index) {
+  int quant_points = dataset->count;
+  double min_distance = INFINITY;
+
+  //acha os pontos mais proximos
+  for (int i = 0; i < quant_points; i++) {
+    for (int j = i + 1; j < quant_points; j++) {
+		if(dataset->points[i].cluster_id == dattaset->points[j].cluster_id) continue; //pula pontos do mesmo cluster
+        double distance = matrix[i][j];
+        if (distance < min_distance) {
+          min_distance = distance
+          *point1_index = i;
+          *point2_index = j;
+        }
+    }
+  }
+}
+
+void merge_clusters_single(DataSet* dataset, int point1_index, int point2_index) {
+  for (int i = 0; i < dataset->count; i++) {
+  	if (dataset->points[i].cluster_id == dataset->points[point2_index].cluster_id) {
+      dataset->points[i].cluster_id = dataset->points[point1_index].cluster_id;
+    }
+}
+
+
+void single_link(DataSet* dataset, int k) {
+ 	int quant_clusters = dataset->count;
+    int quant_points = dataset->count;
+
+ 	//cada ponto começa como um cluster
+	for (int i = 0; i < qtd_points; i++)
+		dataset->points[i].cluster_id = i;
+
+ 	//cria matriz de distancias entre pontos
+	double** distance_matrix = (double**) malloc(sizeof(double*) * quant_clusters);
+	for (int i = 0; i < quant_clusters; i++) {
+		distance_matrix[i] = (double*) malloc(sizeof(double) * quant_clusters);
+		for (int j = 0; j < quant_clusters; j++) distance_matrix[i][j] = points_distance(&dataset->points[i], &dataset->points[j]);
+	}
+
+    //reduz quant_clusters até k fazendo junção
+    while(quant_clusters != k) {
+		int point1_index = -1, point2_index = -1
+		find_closest_points_different_clusters(dataset, distance_matrix, &point1, &point2);
+        merge_clusters_single(dataset, point1_index, point2_index);
+        quant_clusters--;
+    }
+
+  	// Deixando os clusters com as corzinha tudo certo:
+  	int correct_id = -13, wrong_id;
+    for (int i = 0; i < quant_clusters; i++) {
+      for (int j = 0; j < quant_points; j++) {
+        if (dataset->points[j].cluster_id > 0) {
+          wrong_id = dataset->points[j].cluster_id;
+          dataset->points[j].cluster_id = correct_id;
+          for (int k = j; k < quant_points; k++) {
+			if (dataset->points[k].cluster_id == wrong_id) {
+			  dataset->points[k].cluster_id = correct_id;
+			}
+		  }
+          corretc_id++;
+        } else {continue;}
+      }
+    }
+
+    for (int i = 0; i < quant_points; i++) {
+      dataeset->points[i].cluster_id = dataset->points[i].cluster_id + 13;
+    }
+
+}
+
