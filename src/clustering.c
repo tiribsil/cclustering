@@ -82,9 +82,9 @@ double points_distance(DataPoint* p1, DataPoint* p2) {
 }
 
 void merge_clusters(DataSet* dataset, double** clusters_distance, bool* existing_clusters, int cluster1, int cluster2) {
-
+    
 	int qtd_points = dataset->count;
-
+    
 	existing_clusters[cluster2] = false;
 	for (int i = 0; i < qtd_points; i++)
 		if (dataset->points[i].cluster_id == cluster2) dataset->points[i].cluster_id = cluster1;
@@ -97,7 +97,7 @@ void merge_clusters(DataSet* dataset, double** clusters_distance, bool* existing
 			clusters_distance[i][cluster1] = clusters_distance[cluster2][i];
 		}
 	}
-
+    
 }
 
 void complete_link(DataSet* dataset, int k) {
@@ -147,6 +147,90 @@ void complete_link(DataSet* dataset, int k) {
 		while (last < qtd_points && existing_clusters[last] == false) last++;
 		while (first < last) dataset->points[first++].cluster_id = correct_id;
 	}
+    
+}
 
+void find_closest_points_different_clusters(DataSet* dataset, double** matrix, int* point1_index, int* point2_index) {
+    int quant_points = dataset->count;
+    double min_distance = INFINITY;
+    
+    //acha os pontos mais proximos
+    for (int i = 0; i < quant_points; i++) {
+        for (int j = i + 1; j < quant_points; j++) {
+            if(dataset->points[i].cluster_id == dataset->points[j].cluster_id) continue; //pula pontos do mesmo cluster
+            double distance = matrix[i][j];
+            if (distance < min_distance) {
+                min_distance = distance;
+                *point1_index = i;
+                *point2_index = j;
+            }
+        }
+    }
+}
+
+int n_clusters(DataSet* dataset){
+    int n_different_clusters = 0;
+    char* visited = malloc(dataset->count);
+    memset(visited, 0, dataset->count);
+    for(int i = 0; i < dataset->count; i++){
+        if(visited[dataset->points[i].cluster_id]) continue;
+        visited[dataset->points[i].cluster_id] = 1;
+        n_different_clusters++;
+    }
+    free(visited);
+    return n_different_clusters;
+}
+
+void merge_clusters_single(DataSet* dataset, int point1_index, int point2_index) {
+    int cluster_apagado = dataset->points[point2_index].cluster_id;
+    for (int i = 0; i < dataset->count; i++) {
+        if(dataset->points[i].cluster_id != cluster_apagado) continue;
+        dataset->points[i].cluster_id = dataset->points[point1_index].cluster_id;
+    }
+}
+
+void single_link(DataSet* dataset, int k) {
+    int quant_clusters = dataset->count;
+    int quant_points = dataset->count;
+    
+    //cada ponto começa como um cluster
+	for (int i = 0; i < quant_points; i++)
+		dataset->points[i].cluster_id = i;
+    
+    //cria matriz de distancias entre pontos
+	double** distance_matrix = (double**) malloc(sizeof(double*) * quant_clusters);
+	for (int i = 0; i < quant_clusters; i++) {
+		distance_matrix[i] = (double*) malloc(sizeof(double) * quant_clusters);
+		for (int j = 0; j < quant_clusters; j++) 
+            distance_matrix[i][j] = squared_distance(&dataset->points[i], &dataset->points[j]);
+	}
+    
+    //reduz quant_clusters até k fazendo junção
+    while(quant_clusters != k) {
+		int point1_index = -1, point2_index = -1;
+        find_closest_points_different_clusters(dataset, distance_matrix, &point1_index, &point2_index);
+        merge_clusters_single(dataset, point1_index, point2_index);
+        quant_clusters--;
+    }
+    
+    // Deixando os clusters com as corzinha tudo certo:
+    int* vetor_normalizado = malloc(sizeof(int) * quant_points);
+    for (int i = 0; i < quant_points; i++) {
+        vetor_normalizado[i] = -1;
+    }
+    
+    for (int i = 0, k = 0; i < quant_points; i++) {
+        if(vetor_normalizado[dataset->points[i].cluster_id] != -1) { continue; }
+        vetor_normalizado[dataset->points[i].cluster_id] = k;
+        k++;
+    }
+    
+    for (int i = 0; i < quant_points; i++) {
+        dataset->points[i].cluster_id = vetor_normalizado[dataset->points[i].cluster_id];
+    }
+    
+    for(int i = 0; i < dataset->count; i++) free(distance_matrix[i]);
+    free(distance_matrix);
+    free(vetor_normalizado);
 }
 
