@@ -7,7 +7,7 @@
 
 DataPoint* centroids(DataSet* dataset, int n_clusters);
 
-void k_means(DataSet* dataset, int k);
+void k_means(DataSet* dataset, int k, int iteration_limit);
 
 void single_link(DataSet* dataset, int k);
 

@@ -110,3 +110,9 @@ void free_dataset(DataSet* dataset){
     if(dataset->points) free(dataset->points);
     free(dataset);
 }
+
+void write_clu(DataSet* dataset){
+    //alguem faz pra mim?
+    
+    return;
+}

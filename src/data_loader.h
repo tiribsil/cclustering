@@ -30,4 +30,6 @@ void free_dataset(DataSet* dataset);
 
 void print_dataset_summary(const DataSet* dataset);
 
+void write_clu(DataSet* dataset);
+
 #endif // DATA_LOADER_H
