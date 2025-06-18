@@ -77,8 +77,21 @@ void k_means(DataSet* dataset, int k){
     }
 }
 
-double points_distance(DataPoint* p1, DataPoint* p2) {
-	return sqrt(pow(p1->d1 - p2->d1, 2) + pow(p1->d2 - p2->d2, 2));
+void colour_setting(DataSet* dataset, bool* existing_clusters, int k) {
+	int qtd_points = dataset->count, current_id = 0, iterations = k;
+	
+	for (int i = 0; i < qtd_points; i++) {
+		if (iterations == 0) break;
+		if (existing_clusters[i] == true) {
+			int aux = dataset->points[i].cluster_id;
+			for (int j = 0; j < qtd_points; j++) {
+				if (dataset->points[j].cluster_id == aux)
+					dataset->points[j].cluster_id = current_id;
+			}
+			current_id++;
+			iterations--;
+		}
+	}
 }
 
 void merge_clusters(DataSet* dataset, double** clusters_distance, bool* existing_clusters, int cluster1, int cluster2) {
@@ -115,7 +128,7 @@ void complete_link(DataSet* dataset, int k) {
 	double** clusters_distance = (double**)malloc(sizeof(double*)*qtd_points);
 	for (int i = 0; i < qtd_points; i++) {
 		clusters_distance[i] = (double*)malloc(sizeof(double)*qtd_points);
-		for (int j = 0; j < qtd_points; j++) clusters_distance[i][j] = points_distance(&dataset->points[i], &dataset->points[j]);
+		for (int j = 0; j < qtd_points; j++) clusters_distance[i][j] = squared_distance(&dataset->points[i], &dataset->points[j]);
 	}
 	
 	// Comeco do algoritmo de fato:
@@ -141,12 +154,13 @@ void complete_link(DataSet* dataset, int k) {
 		
 	}
 	
-	// Deixando os clusters com as corzinha tudo certo:
-	int correct_id = 0, first = 0;
-	for (int last = 1; last < qtd_points; correct_id++, last++) {
-		while (last < qtd_points && existing_clusters[last] == false) last++;
-		while (first < last) dataset->points[first++].cluster_id = correct_id;
-	}
+	// Corrigindo as cores:
+	colour_setting(dataset, existing_clusters, k);
+	
+	// Desalocando a matriz:
+	for (int i = 0; i < qtd_points; i++) free(clusters_distance[i]);
+	free(clusters_distance);
+	free(existing_clusters); // Desalocando existing_clusters
 
 }
 
