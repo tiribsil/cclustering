@@ -37,9 +37,9 @@ typedef enum {
 
 X11Context* init_x11(const char* window_title, int width, int height);
 
-void draw_points_on_expose(X11Context* x_context, const DataSet* dataset);
+void draw_points_on_expose(X11Context* x_context, const DataSet* dataset, double ari);
 
-void run_x11_event_loop(X11Context* x_context, const DataSet* dataset);
+void run_x11_event_loop(X11Context* x_context, const DataSet* dataset, double ari);
 
 void close_x11(X11Context* x_context);
 

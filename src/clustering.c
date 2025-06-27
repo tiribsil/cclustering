@@ -230,3 +230,88 @@ void single_link(DataSet* dataset, int k) {
     free(distance_matrix);
     free(new_cluster_id_hash);
 }
+
+long long combinations(int n, int k) {
+    if (k < 0 || k > n) {
+        return 0;
+    }
+    if (k == 0 || k == n) {
+        return 1;
+    }
+    if (k > n / 2) {
+        k = n - k;
+    }
+    if (k != 2) { 
+        return 0;
+    }
+    return (long long)n * (n - 1) / 2;
+}
+
+double adjusted_rand_index(const int* clusters_A, const int* clusters_B, int num_points) {
+    if (clusters_A == NULL || clusters_B == NULL || num_points == 0) {
+        return 0.0;
+    }
+
+    int max_A = 0, max_B = 0;
+    for (int i = 0; i < num_points; i++) {
+        if (clusters_A[i] > max_A) max_A = clusters_A[i];
+        if (clusters_B[i] > max_B) max_B = clusters_B[i];
+    }
+    int k_A = max_A + 1;
+    int k_B = max_B + 1;
+
+    int** contingency_table = (int**)malloc(k_A * sizeof(int*));
+    for (int i = 0; i < k_A; i++) {
+        contingency_table[i] = (int*)calloc(k_B, sizeof(int));
+    }
+
+    for (int i = 0; i < num_points; i++) {
+        contingency_table[clusters_A[i]][clusters_B[i]]++;
+    }
+
+    long long sum_nij_choose_2 = 0;
+    for (int i = 0; i < k_A; i++) {
+        for (int j = 0; j < k_B; j++) {
+            sum_nij_choose_2 += combinations(contingency_table[i][j], 2);
+        }
+    }
+
+    long long sum_a_choose_2 = 0;
+    for (int i = 0; i < k_A; i++) {
+        int a_i = 0;
+        for (int j = 0; j < k_B; j++) {
+            a_i += contingency_table[i][j];
+        }
+        sum_a_choose_2 += combinations(a_i, 2);
+    }
+
+    long long sum_b_choose_2 = 0;
+    for (int j = 0; j < k_B; j++) {
+        int b_j = 0;
+        for (int i = 0; i < k_A; i++) {
+            b_j += contingency_table[i][j];
+        }
+        sum_b_choose_2 += combinations(b_j, 2);
+    }
+    
+    for (int i = 0; i < k_A; i++) {
+        free(contingency_table[i]);
+    }
+    free(contingency_table);
+
+    // Calcula o ARI usando a fórmula
+    // ARI = (Index - ExpectedIndex) / (MaxIndex - ExpectedIndex)
+    long long total_combinations = combinations(num_points, 2);
+    double expected_index = (double)(sum_a_choose_2 * sum_b_choose_2) / total_combinations;
+    double max_index = 0.5 * (sum_a_choose_2 + sum_b_choose_2);
+    double index = sum_nij_choose_2;
+
+    double numerator = index - expected_index;
+    double denominator = max_index - expected_index;
+    
+    if (denominator == 0) {
+        return (numerator == 0) ? 1.0 : 0.0;
+    }
+    
+    return numerator / denominator;
+}

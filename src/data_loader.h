@@ -32,4 +32,8 @@ void print_dataset_summary(const DataSet* dataset);
 
 void write_clu(DataSet* dataset);
 
+int* load_clusters(const char* filename, int num_points);
+
+void free_clusters(int* clusters);
+
 #endif // DATA_LOADER_H

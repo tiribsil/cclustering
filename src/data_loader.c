@@ -111,6 +111,48 @@ void free_dataset(DataSet* dataset){
     free(dataset);
 }
 
+int* load_clusters(const char* filename, int num_points) {
+    FILE* file = fopen(filename, "r");
+    if (!file) {
+        printf("Aviso: Não foi possível abrir o arquivo de clusters de referência '%s'.\n", filename);
+        return NULL;
+    }
+
+    int* clusters = (int*)malloc(sizeof(int) * num_points);
+    if (!clusters) {
+        perror("Falha ao alocar memória para os clusters de referência");
+        fclose(file);
+        return NULL;
+    }
+
+    char line_buffer[LINE_BUFFER_SIZE];
+    int point_index = 0;
+    int cluster_id;
+
+    while (fgets(line_buffer, sizeof(line_buffer), file) != NULL && point_index < num_points) {
+        if (sscanf(line_buffer, "%*s\t%d", &cluster_id) == 1) {
+            clusters[point_index] = cluster_id;
+        } else {
+            fprintf(stderr, "Aviso: Linha mal formatada no arquivo de referência: %s", line_buffer);
+            clusters[point_index] = 0;
+        }
+        point_index++;
+    }
+
+    if (point_index < num_points) {
+        fprintf(stderr, "Aviso: O arquivo de referência '%s' contém menos pontos (%d) do que o dataset (%d).\n", filename, point_index, num_points);
+    }
+
+    fclose(file);
+    return clusters;
+}
+
+void free_clusters(int* clusters) {
+    if (clusters) {
+        free(clusters);
+    }
+}
+
 void write_clu(DataSet* dataset){
     //alguem faz pra mim?
     
