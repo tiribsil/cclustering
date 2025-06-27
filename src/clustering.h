@@ -13,4 +13,6 @@ void single_link(DataSet* dataset, int k);
 
 void complete_link(DataSet* dataset, int k);
 
+double adjusted_rand_index(const int* clusters_A, const int* clusters_B, int num_points); 
+
 #endif //CLUSTERING_H
