@@ -94,13 +94,50 @@ int main(int argc, char *argv[]){
             write_clu(dataset);
         }
     }
+  
+    int ref_choice = 0;
+    char ref_filename[256];
+    char group_filename[256];
+    printf("\nEscolha um arquivo de resultado para comparar:\n");
+    printf("1 - c2ds1-2spReal.clu (Espiral)\n");
+    printf("2 - c2ds3-2gReal.clu (Circulos)\n");
+    printf("3 - monkeyReal1.clu (Macaco)\n");
+    scanf("%d", &ref_choice);
+
+    const char* chosen_file;
+    switch(ref_choice) {
+        case 1: chosen_file = "c2ds1-2spReal.clu"; break;
+        case 2: chosen_file = "c2ds3-2gReal.clu"; break;
+        case 3: chosen_file = "monkeyReal1.clu"; break;
+        default: printf("Escolha inválida.\n"); break;
+    }
     
+    snprintf(ref_filename, sizeof(ref_filename), "../data/resultados/%s", chosen_file);
+    snprintf(group_filename, sizeof(group_filename), "../data/resultados/G1%s", chosen_file);
+
+    printf("Carregando clusters de referência de %s...\n", ref_filename);
+    int* clusters_ref = load_clusters(ref_filename, dataset->count);
+    printf("Carregando clusters produzidos...\n");
+    int* clusters_prod = load_clusters(group_filename, dataset->count);
+    double ari = 0.0;
+    
+    if (clusters_ref && clusters_prod) {
+        ari = adjusted_rand_index(clusters_prod, clusters_ref, dataset->count);
+        printf("Índice Rand Ajustado (ARI) calculado: %f\n", ari);
+        
+        free(clusters_prod);
+        free_clusters(clusters_ref);
+    } else {
+        printf("Não foi possível carregar os clusters de referência. O ARI não será calculado.\n");
+    }
+
     printf("Exibindo dados. Pressione 'q' na janela para sair.\n");
-    run_x11_event_loop(x_context, dataset);
+    run_x11_event_loop(x_context, dataset, ari);
     
     printf("Fechando X11 e liberando recursos...\n");
     close_x11(x_context);
     free_dataset(dataset);
+    free_clusters(clusters_ref);
     
     printf("Programa finalizado com sucesso.\n");
     return EXIT_SUCCESS;

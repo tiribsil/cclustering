@@ -109,7 +109,7 @@ X11Context* init_x11(const char* window_title, int width, int height){
     return context;
 }
 
-void draw_points_on_expose(X11Context* x_context, const DataSet* dataset){
+void draw_points_on_expose(X11Context* x_context, const DataSet* dataset, double ari){
     if(!x_context || !dataset || !dataset->count) return;
     
     XSetForeground(x_context->display, x_context->gc, x_context->white_pixel);
@@ -137,10 +137,16 @@ void draw_points_on_expose(X11Context* x_context, const DataSet* dataset){
                  2 * POINT_RADIUS, 2 * POINT_RADIUS,
                  0, 360 * 64);
     }
+
+    char ari_string[64];
+    snprintf(ari_string, sizeof(ari_string), "Adjusted Rand Index: %.4f", ari);
+    XSetForeground(x_context->display, x_context->gc, x_context->black_pixel);
+    XDrawString(x_context->display, x_context->window, x_context->gc, 10, x_context->height - 10, ari_string, strlen(ari_string));
+
     XFlush(x_context->display);
 }
 
-void run_x11_event_loop(X11Context* x_context, const DataSet* dataset){
+void run_x11_event_loop(X11Context* x_context, const DataSet* dataset, double ari){
     XEvent event;
     KeySym key;
     char buffer[10];
@@ -151,7 +157,7 @@ void run_x11_event_loop(X11Context* x_context, const DataSet* dataset){
         switch(event.type){
             case Expose:
             if(!event.xexpose.count){
-                draw_points_on_expose(x_context, dataset);
+                draw_points_on_expose(x_context, dataset, ari);
             }
             break;
             
