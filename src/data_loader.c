@@ -153,8 +153,33 @@ void free_clusters(int* clusters) {
     }
 }
 
-void write_clu(DataSet* dataset){
-    //alguem faz pra mim?
+void write_clu(DataSet* dataset, char* dataset_name){
+    
+    int qtd_points = dataset->count;
+    
+    // Nome do arquivo:
+    char prefix[35] = {'\0'}, file_name[100] = {'\0'};
+    snprintf(prefix, sizeof(prefix), &dataset_name[8]);
+    for (int i = 0; i < 35; i++) if (prefix[i] == '.') prefix[i] = '\0';
+    snprintf(file_name, sizeof(file_name), "../data/resultados/G1%s.clu", prefix);
+    
+    // Criando o arquivo:
+    FILE* file = fopen(file_name, "w");
+    
+    char aux[20] = {'\0'};
+    if (!strcmp(prefix, "c2ds3-2g")) strncpy(aux, "c2g1s", sizeof(aux) - 1);
+    else if (!strcmp(prefix, "c2ds1-2sp")) strncpy(aux, "c2sp1s", sizeof(aux) - 1);
+    else strncpy(aux, "monkeyc1g1s", sizeof(aux) - 1);
+    aux[sizeof(aux)-1] = '\0';
+    
+    // Escrevendo no arquivo:
+    for (int i = 0; i < qtd_points; i++) {
+    	char line[50] = {'\0'};
+    	snprintf(line, sizeof(line), "%s%d\t%d", aux, i+1, dataset->points[i].cluster_id);
+    	fwrite(line, sizeof(char), strlen(line), file);
+    	if (i != qtd_points-1) fprintf(file, "\n");
+    }
+    fclose(file);
     
     return;
 }

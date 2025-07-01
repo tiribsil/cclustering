@@ -78,20 +78,20 @@ int main(int argc, char *argv[]){
     
     if(chosen_algorithm == 1){
         k_means(dataset, arg1, arg2);
-        write_clu(dataset);
+        write_clu(dataset, argv[1]);
     }
     
     else if(chosen_algorithm == 2){
         for(int i = arg1; i <= arg2; i++){
             single_link(dataset, i);
-            write_clu(dataset);
+            write_clu(dataset, argv[1]);
         }
     }
     
     else{
         for(int i = arg1; i <= arg2; i++){
             complete_link(dataset, i);
-            write_clu(dataset);
+            write_clu(dataset, argv[1]);
         }
     }
   
