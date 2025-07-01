@@ -76,52 +76,59 @@ int main(int argc, char *argv[]){
     printf(message[1][is_link]);
     scanf("%d", &arg2);
     
-    if(chosen_algorithm == 1){
-        k_means(dataset, arg1, arg2);
-        write_clu(dataset, (char*)data_filename);
-    }
-    
-    else if(chosen_algorithm == 2){
-        for(int i = arg1; i <= arg2; i++){
-            single_link(dataset, i);
-            write_clu(dataset, (char*)data_filename);
-        }
-    }
-    
-    else{
-        for(int i = arg1; i <= arg2; i++){
-            complete_link(dataset, i);
-            write_clu(dataset, (char*)data_filename);
-        }
-    }
-    
-    char ref_filename[1 << 8];
-    char group_filename[1 << 8];
-    
     char* filename_start = (char*)data_filename + strlen(data_filename);
     while(*--filename_start != '/');
     filename_start++;
     
     char chosen_file[1 << 6];
     strcpy(chosen_file, filename_start);
-    sprintf(chosen_file + strlen(chosen_file) - 3, "clu");
     
-    snprintf(ref_filename, 1 << 8, "../data/resultados/%s", chosen_file);
-    snprintf(group_filename, 1 << 8, "../data/resultados/G1_%s", chosen_file);
+    char* extension_start = chosen_file + strlen(chosen_file);
+    while(*--extension_start != '.');
+    *extension_start = 0;
     
+    if(chosen_algorithm == 1){
+        k_means(dataset, arg1, arg2);
+        write_clu(dataset, chosen_file, arg1);
+    }
+    
+    else if(chosen_algorithm == 2){
+        for(int i = arg1; i <= arg2; i++){
+            single_link(dataset, i);
+            write_clu(dataset, chosen_file, i);
+        }
+    }
+    
+    else{
+        for(int i = arg1; i <= arg2; i++){
+            complete_link(dataset, i);
+            write_clu(dataset, chosen_file, i);
+        }
+    }
+    
+    char ref_filename[1 << 8];
+    char group_filename[1 << 8];
+    
+    snprintf(ref_filename, 1 << 8, "../data/resultados/%s.clu", chosen_file);
     printf("Carregando clusters de referência de %s...\n", ref_filename);
     int* clusters_ref = load_clusters(ref_filename, dataset->count);
-    printf("Carregando clusters produzidos...\n");
-    int* clusters_prod = load_clusters(group_filename, dataset->count);
-    double ari = 0.0;
+    double ari = 0;
     
-    if (clusters_ref && clusters_prod) {
-        ari = adjusted_rand_index(clusters_prod, clusters_ref, dataset->count);
-        printf("Índice Rand Ajustado (ARI) calculado: %f\n", ari);
+    if(!is_link) arg2 = arg1;
+    for(int i = arg1; i <= arg2; i++){
+        snprintf(group_filename, 1 << 8, "../data/resultados/G1_%s_%d.clu", chosen_file, i);
         
-        free(clusters_prod);
-    } else {
-        printf("Não foi possível carregar os clusters de referência. O ARI não será calculado.\n");
+        printf("Carregando clusters produzidos...\n");
+        int* clusters_prod = load_clusters(group_filename, dataset->count);
+        
+        if (clusters_ref && clusters_prod) {
+            ari = adjusted_rand_index(clusters_prod, clusters_ref, dataset->count);
+            printf("Índice Rand Ajustado (ARI) calculado para k = %d: %f\n", i, ari);
+            
+            free(clusters_prod);
+        } else {
+            printf("Não foi possível carregar os clusters de referência. O ARI não será calculado.\n");
+        }
     }
     
     printf("Exibindo dados. Pressione 'q' na janela para sair.\n");
