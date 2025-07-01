@@ -78,43 +78,49 @@ int main(int argc, char *argv[]){
     
     if(chosen_algorithm == 1){
         k_means(dataset, arg1, arg2);
-        write_clu(dataset, argv[1]);
+        write_clu(dataset, (char*)data_filename);
     }
     
     else if(chosen_algorithm == 2){
         for(int i = arg1; i <= arg2; i++){
             single_link(dataset, i);
-            write_clu(dataset, argv[1]);
+            write_clu(dataset, (char*)data_filename);
         }
     }
     
     else{
         for(int i = arg1; i <= arg2; i++){
             complete_link(dataset, i);
-            write_clu(dataset, argv[1]);
+            write_clu(dataset, (char*)data_filename);
         }
     }
-  
+    
     int ref_choice = 0;
     char ref_filename[256];
     char group_filename[256];
-    printf("\nEscolha um arquivo de resultado para comparar:\n");
-    printf("1 - c2ds1-2spReal.clu (Espiral)\n");
-    printf("2 - c2ds3-2gReal.clu (Circulos)\n");
-    printf("3 - monkeyReal1.clu (Macaco)\n");
-    scanf("%d", &ref_choice);
-
+    
+    while(1){
+        printf("\nEscolha um arquivo de resultado para comparar:\n");
+        printf("1 - c2ds1-2sp.clu (Espiral)\n");
+        printf("2 - c2ds3-2g.clu (Circulos)\n");
+        printf("3 - monkey.clu (Macaco)\n");
+        scanf("%d", &ref_choice);
+        
+        if(ref_choice >= 1 && ref_choice <= 3) break; 
+        
+        printf("Escolha inválida.\n");
+    }
+    
     const char* chosen_file;
     switch(ref_choice) {
-        case 1: chosen_file = "c2ds1-2spReal.clu"; break;
-        case 2: chosen_file = "c2ds3-2gReal.clu"; break;
-        case 3: chosen_file = "monkeyReal1.clu"; break;
-        default: printf("Escolha inválida.\n"); break;
+        case 1: chosen_file = "c2ds1-2sp.clu"; break;
+        case 2: chosen_file = "c2ds3-2g.clu"; break;
+        case 3: chosen_file = "monkey.clu"; break;
     }
     
     snprintf(ref_filename, sizeof(ref_filename), "../data/resultados/%s", chosen_file);
-    snprintf(group_filename, sizeof(group_filename), "../data/resultados/G1%s", chosen_file);
-
+    snprintf(group_filename, sizeof(group_filename), "../data/resultados/G1_%s", chosen_file);
+    
     printf("Carregando clusters de referência de %s...\n", ref_filename);
     int* clusters_ref = load_clusters(ref_filename, dataset->count);
     printf("Carregando clusters produzidos...\n");
@@ -126,11 +132,10 @@ int main(int argc, char *argv[]){
         printf("Índice Rand Ajustado (ARI) calculado: %f\n", ari);
         
         free(clusters_prod);
-        free_clusters(clusters_ref);
     } else {
         printf("Não foi possível carregar os clusters de referência. O ARI não será calculado.\n");
     }
-
+    
     printf("Exibindo dados. Pressione 'q' na janela para sair.\n");
     run_x11_event_loop(x_context, dataset, ari);
     

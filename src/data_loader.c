@@ -117,18 +117,18 @@ int* load_clusters(const char* filename, int num_points) {
         printf("Aviso: Não foi possível abrir o arquivo de clusters de referência '%s'.\n", filename);
         return NULL;
     }
-
+    
     int* clusters = (int*)malloc(sizeof(int) * num_points);
     if (!clusters) {
         perror("Falha ao alocar memória para os clusters de referência");
         fclose(file);
         return NULL;
     }
-
+    
     char line_buffer[LINE_BUFFER_SIZE];
     int point_index = 0;
     int cluster_id;
-
+    
     while (fgets(line_buffer, sizeof(line_buffer), file) != NULL && point_index < num_points) {
         if (sscanf(line_buffer, "%*s\t%d", &cluster_id) == 1) {
             clusters[point_index] = cluster_id;
@@ -138,11 +138,11 @@ int* load_clusters(const char* filename, int num_points) {
         }
         point_index++;
     }
-
+    
     if (point_index < num_points) {
         fprintf(stderr, "Aviso: O arquivo de referência '%s' contém menos pontos (%d) do que o dataset (%d).\n", filename, point_index, num_points);
     }
-
+    
     fclose(file);
     return clusters;
 }
@@ -161,7 +161,7 @@ void write_clu(DataSet* dataset, char* dataset_name){
     char prefix[35] = {'\0'}, file_name[100] = {'\0'};
     snprintf(prefix, sizeof(prefix), &dataset_name[8]);
     for (int i = 0; i < 35; i++) if (prefix[i] == '.') prefix[i] = '\0';
-    snprintf(file_name, sizeof(file_name), "../data/resultados/G1%s.clu", prefix);
+    snprintf(file_name, sizeof(file_name), "../data/resultados/G1_%s.clu", prefix);
     
     // Criando o arquivo:
     FILE* file = fopen(file_name, "w");
