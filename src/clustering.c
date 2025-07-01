@@ -87,6 +87,23 @@ void k_means(DataSet* dataset, int k, int iteration_limit){
     }
 }
 
+void colour_setting(DataSet* dataset, bool* existing_clusters, int k) {
+	int qtd_points = dataset->count, current_id = 0, iterations = k;
+	
+	for (int i = 0; i < qtd_points; i++) {
+		if (iterations == 0) break;
+		if (existing_clusters[i] == true) {
+			int aux = dataset->points[i].cluster_id;
+			for (int j = 0; j < qtd_points; j++) {
+				if (dataset->points[j].cluster_id == aux)
+					dataset->points[j].cluster_id = current_id;
+			}
+			current_id++;
+			iterations--;
+		}
+	}
+}
+
 void merge_clusters(DataSet* dataset, double** clusters_distance, bool* existing_clusters, int cluster1, int cluster2) {
     
 	int qtd_points = dataset->count;
@@ -107,22 +124,21 @@ void merge_clusters(DataSet* dataset, double** clusters_distance, bool* existing
 }
 
 void complete_link(DataSet* dataset, int k) {
-	uncluster(dataset);
-    
-	int qtd_clusters = dataset->count;
+	
+	int qtd_points = dataset->count, qtd_clusters = dataset->count;
 	
 	// Cada ponto é um cluster fechado:
-	bool* existing_clusters = (bool*)malloc(sizeof(bool)*dataset->count);
-	for (int i = 0; i < dataset->count; i++) {
+	bool* existing_clusters = (bool*)malloc(sizeof(bool)*qtd_points);
+	for (int i = 0; i < qtd_points; i++) {
 		existing_clusters[i] = true;
 		dataset->points[i].cluster_id = i;
 	}
 	
 	// Array de distancias entres clusters:
-	double** clusters_distance = (double**)malloc(sizeof(double*)*dataset->count);
-	for (int i = 0; i < dataset->count; i++) {
-		clusters_distance[i] = (double*)malloc(sizeof(double)*dataset->count);
-		for (int j = 0; j < dataset->count; j++) clusters_distance[i][j] = squared_distance(&dataset->points[i], &dataset->points[j]);
+	double** clusters_distance = (double**)malloc(sizeof(double*)*qtd_points);
+	for (int i = 0; i < qtd_points; i++) {
+		clusters_distance[i] = (double*)malloc(sizeof(double)*qtd_points);
+		for (int j = 0; j < qtd_points; j++) clusters_distance[i][j] = squared_distance(&dataset->points[i], &dataset->points[j]);
 	}
 	
 	// Comeco do algoritmo de fato:
@@ -132,9 +148,9 @@ void complete_link(DataSet* dataset, int k) {
 		int cluster1 = -1, cluster2 = -1;
 		
 		// Encontrando a menor distancia max na matriz de distancias dos clusters
-		for (int i = 0; i < dataset->count; i++) {
+		for (int i = 0; i < qtd_points; i++) {
 			if (existing_clusters[i] == false) continue;
-			for (int j = 0; j < dataset->count; j++) {
+			for (int j = 0; j < qtd_points; j++) {
 				if (existing_clusters[j] == false || clusters_distance[i][j] == 0) continue;
 				if (clusters_distance[i][j] < shortest_distance) {
 					shortest_distance = clusters_distance[i][j];
@@ -148,16 +164,14 @@ void complete_link(DataSet* dataset, int k) {
 		
 	}
 	
-	// Deixando os clusters com as corzinha tudo certo:
-	int correct_id = 0, first = 0;
-	for (int last = 1; last < dataset->count; correct_id++, last++) {
-		while (last < dataset->count && existing_clusters[last] == false) last++;
-		while (first < last) dataset->points[first++].cluster_id = correct_id;
-	}
-    
-    for(int i = 0; i < dataset->count; i++) free(clusters_distance[i]);
-    free(clusters_distance);
-    free(existing_clusters);
+	// Corrigindo as cores:
+	colour_setting(dataset, existing_clusters, k);
+	
+	// Desalocando a matriz:
+	for (int i = 0; i < qtd_points; i++) free(clusters_distance[i]);
+	free(clusters_distance);
+	free(existing_clusters); // Desalocando existing_clusters
+
 }
 
 void find_closest_points_different_clusters(DataSet* dataset, double** matrix, int* point1_index, int* point2_index) {

@@ -30,7 +30,7 @@ void free_dataset(DataSet* dataset);
 
 void print_dataset_summary(const DataSet* dataset);
 
-void write_clu(DataSet* dataset);
+void write_clu(DataSet* dataset, char* dataset_name);
 
 int* load_clusters(const char* filename, int num_points);
 
