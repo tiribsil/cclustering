@@ -55,18 +55,6 @@ Para compilar e executar este projeto, você precisará de:
 - Utilitário `make`
 - Bibliotecas de desenvolvimento do X11.
 
-Para instalar as dependências em um sistema baseado em Debian/Ubuntu:
-```bash
-sudo apt-get update
-sudo apt-get install build-essential libx11-dev
-```
-
-Para sistemas baseados em Fedora/CentOS:
-```bash
-sudo dnf groupinstall "Development Tools"
-sudo dnf install libX11-devel
-```
-
 ## Compilação
 
 O projeto utiliza um `Makefile` para simplificar a compilação.
