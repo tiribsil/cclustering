@@ -153,10 +153,10 @@ void free_clusters(int* clusters) {
     }
 }
 
-void write_clu(DataSet* dataset, char* filename, int k){
+void write_clu(DataSet* dataset, char* filename, int k, int chosen_algorithm){
     // Criando o arquivo:
     char file_path[1 << 8];
-    sprintf(file_path, "../data/resultados/G1_%s_%d.clu", filename, k);
+    sprintf(file_path, "../data/resultados/G1_%s_%d_%d.clu", filename, chosen_algorithm, k);
     
     FILE* file = fopen(file_path, "w");
     

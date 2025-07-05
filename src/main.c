@@ -89,20 +89,20 @@ int main(int argc, char *argv[]){
     
     if(chosen_algorithm == 1){
         k_means(dataset, arg1, arg2);
-        write_clu(dataset, chosen_file, arg1);
+        write_clu(dataset, chosen_file, arg1, chosen_algorithm);
     }
     
     else if(chosen_algorithm == 2){
         for(int i = arg1; i <= arg2; i++){
             single_link(dataset, i);
-            write_clu(dataset, chosen_file, i);
+            write_clu(dataset, chosen_file, i, chosen_algorithm);
         }
     }
     
     else{
         for(int i = arg1; i <= arg2; i++){
             complete_link(dataset, i);
-            write_clu(dataset, chosen_file, i);
+            write_clu(dataset, chosen_file, i, chosen_algorithm);
         }
     }
     
@@ -116,7 +116,7 @@ int main(int argc, char *argv[]){
     
     if(!is_link) arg2 = arg1;
     for(int i = arg1; i <= arg2; i++){
-        snprintf(group_filename, 1 << 8, "../data/resultados/G1_%s_%d.clu", chosen_file, i);
+        snprintf(group_filename, 1 << 8, "../data/resultados/G1_%s_%d_%d.clu", chosen_file, chosen_algorithm, i);
         
         printf("Carregando clusters produzidos...\n");
         int* clusters_prod = load_clusters(group_filename, dataset->count);
